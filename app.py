@@ -5,15 +5,19 @@ app = Flask(__name__)
 
 @app.route("/", methods=["GET", "POST"])
 def home():
-  # 1. Mengambil data identitas (Jika pertama kali buka, gunakan nilai default)
+  # 1. Mengambil data identitas dari form ketikan Anda
   nama_user = request.form.get("nama_user", "Nama Anda Disini")
   univ_user = request.form.get("univ_user", "Telkom University")
   status_user = request.form.get("status_user", "Aktif")
 
-  # 2. Mengambil data status halaman kuis
+  # Jika tidak sengaja terhapus atau kosong, kembalikan ke default
+  if not nama_user:
+    nama_user = "Nama Anda Disini"
+
+  # 2. Mengambil status halaman kuis
   show_soal = request.form.get("show_soal", "false")
 
-  # 3. Mengambil nilai jawaban angka agar tidak hilang saat di-submit
+  # 3. Mengambil nilai jawaban angka agar tidak hilang
   jawab1 = request.form.get("soal1", "")
   jawab2 = request.form.get("soal2", "")
   jawab3 = request.form.get("soal3", "")
@@ -31,7 +35,6 @@ def home():
     benar_soal2 = False
     benar_soal3 = False
 
-    # Logika IF-ELSE Evaluasi Soal 1
     if jawab1 == "12":
       hasil_soal1 = (
           "<span style='color:green;'><b>Benar!</b> (12)</span>"
@@ -42,7 +45,6 @@ def home():
           f"<span style='color:red;'><b>Salah!</b> Jawaban Anda: {jawab1}</span>"
       )
 
-    # Logika IF-ELSE Evaluasi Soal 2
     if jawab2 == "40":
       hasil_soal2 = (
           "<span style='color:green;'><b>Benar!</b> (40)</span>"
@@ -53,7 +55,6 @@ def home():
           f"<span style='color:red;'><b>Salah!</b> Jawaban Anda: {jawab2}</span>"
       )
 
-    # Logika IF-ELSE Evaluasi Soal 3
     if jawab3 == "5":
       hasil_soal3 = (
           "<span style='color:green;'><b>Benar!</b> (5)</span>"
@@ -64,7 +65,6 @@ def home():
           f"<span style='color:red;'><b>Salah!</b> Jawaban Anda: {jawab3}</span>"
       )
 
-    # Logika IF-ELSE Utama untuk memunculkan Nilai 100
     if benar_soal1 and benar_soal2 and benar_soal3:
       notifikasi_sukses = f"""
             <div style="background-color: #d4edda; color: #155724; padding: 15px; border-radius: 5px; margin-bottom: 20px; border: 1px solid #c3e6cb; text-align: center;">
@@ -115,7 +115,7 @@ def home():
 
             <h2>👋 Selamat Datang!</h2>
             
-            <!-- Bagian Tampilan Biodata Dinamis (Mengikuti Input Terbaru) -->
+            <!-- Tampilan Biodata Atas -->
             <div class="biodata">
                 <p><b>Nama:</b> {nama_user}</p>
                 <p><b>Universitas:</b> {univ_user}</p>
@@ -123,14 +123,13 @@ def home():
             </div>
 
             <form method="POST">
-                <!-- KUNCI PENTING: Meneruskan data state agar tidak ter-reset oleh sistem Flask -->
+                <!-- Status halaman kuis -->
                 <input type="hidden" name="show_soal" value="{show_soal}">
-                <input type="hidden" name="nama_user" value="{nama_user}">
-                <input type="hidden" name="univ_user" value="{univ_user}">
-                <input type="hidden" name="status_user" value="{status_user}">
-                
-                <!-- Menu Pengeditan Profil (Hanya Muncul di Menu Awal) -->
-                {f'''
+  """
+
+  # KONDISI JIKA SEDANG DI HALAMAN UTAMA (MENU AWAL)
+  if show_soal == "false":
+    html_page += f"""
                 <div class="edit-box">
                     <h4 style="margin:0;">⚙️ Pengaturan Profil:</h4>
                     <label>Ubah Nama:</label>
@@ -151,12 +150,16 @@ def home():
                     <a href='https://telkomuniversity.ac.id' target='_blank' class='btn btn-telu'>🌐 Web Tel U</a>
                     <button type='submit' name='tombol_selanjutnya' class='btn btn-next'>➡️ Selanjutnya</button>
                 </div>
-                ''' if show_soal == "false" else ""}
     """
 
-  # Jika status kuis terbuka (show_soal == true), tampilkan bagian soal
+  # KONDISI JIKA SEDANG DI HALAMAN SOAL KUIS
   if show_soal == "true":
     html_page += f"""
+                <!-- Mengunci data nama agar tidak hilang saat Cek Jawaban ditekan -->
+                <input type="hidden" name="nama_user" value="{nama_user}">
+                <input type="hidden" name="univ_user" value="{univ_user}">
+                <input type="hidden" name="status_user" value="{status_user}">
+
                 <div class="soal-box">
                     <h3>📝 Kuis Matematika If-Else</h3>
                     
