@@ -5,61 +5,66 @@ app = Flask(__name__)
 
 @app.route("/", methods=["GET", "POST"])
 def home():
-  # Mengambil data profil dari form (jika belum diisi, ada nilai defaultnya)
+  # 1. Mengambil data identitas (Jika pertama kali buka, gunakan nilai default)
   nama_user = request.form.get("nama_user", "Nama Anda Disini")
   univ_user = request.form.get("univ_user", "Telkom University")
   status_user = request.form.get("status_user", "Aktif")
 
-  # Menyimpan status apakah kuis sedang terbuka
+  # 2. Mengambil data status halaman kuis
   show_soal = request.form.get("show_soal", "false")
+
+  # 3. Mengambil nilai jawaban angka agar tidak hilang saat di-submit
+  jawab1 = request.form.get("soal1", "")
+  jawab2 = request.form.get("soal2", "")
+  jawab3 = request.form.get("soal3", "")
 
   hasil_soal1 = ""
   hasil_soal2 = ""
   hasil_soal3 = ""
   notifikasi_sukses = ""
 
-  # Jika tombol "Cek Jawaban" diklik
+  # JIKA TOMBOL CEK JAWABAN DIKLIK
   if request.method == "POST" and "cek_jawaban" in request.form:
     show_soal = "true"
-    jawab1 = request.form.get("soal1")
-    jawab2 = request.form.get("soal2")
-    jawab3 = request.form.get("soal3")
 
     benar_soal1 = False
     benar_soal2 = False
     benar_soal3 = False
 
+    # Logika IF-ELSE Evaluasi Soal 1
     if jawab1 == "12":
       hasil_soal1 = (
           "<span style='color:green;'><b>Benar!</b> (12)</span>"
       )
       benar_soal1 = True
-    else:
+    elif jawab1 != "":
       hasil_soal1 = (
           f"<span style='color:red;'><b>Salah!</b> Jawaban Anda: {jawab1}</span>"
       )
 
+    # Logika IF-ELSE Evaluasi Soal 2
     if jawab2 == "40":
       hasil_soal2 = (
           "<span style='color:green;'><b>Benar!</b> (40)</span>"
       )
       benar_soal2 = True
-    else:
+    elif jawab2 != "":
       hasil_soal2 = (
           f"<span style='color:red;'><b>Salah!</b> Jawaban Anda: {jawab2}</span>"
       )
 
+    # Logika IF-ELSE Evaluasi Soal 3
     if jawab3 == "5":
       hasil_soal3 = (
           "<span style='color:green;'><b>Benar!</b> (5)</span>"
       )
       benar_soal3 = True
-    else:
+    elif jawab3 != "":
       hasil_soal3 = (
           f"<span style='color:red;'><b>Salah!</b> Jawaban Anda: {jawab3}</span>"
       )
 
-    # Logika memunculkan nilai jika semua benar
+    # Logika IF-ELSE Utama untuk memunculkan Nilai 100
     if benar_soal1 and benar_soal2 and benar_soal3:
       notifikasi_sukses = f"""
             <div style="background-color: #d4edda; color: #155724; padding: 15px; border-radius: 5px; margin-bottom: 20px; border: 1px solid #c3e6cb; text-align: center;">
@@ -68,11 +73,11 @@ def home():
             </div>
             """
 
-  # Jika tombol "Selanjutnya" diklik
+  # JIKA TOMBOL SELANJUTNYA DIKLIK
   if request.method == "POST" and "tombol_selanjutnya" in request.form:
     show_soal = "true"
 
-  # Jika tombol "Kembali ke Menu Awal" diklik
+  # JIKA TOMBOL KEMBALI DIKLIK
   if request.method == "POST" and "tombol_kembali" in request.form:
     show_soal = "false"
 
@@ -110,7 +115,7 @@ def home():
 
             <h2>👋 Selamat Datang!</h2>
             
-            <!-- Bagian Tampilan Biodata Dinamis -->
+            <!-- Bagian Tampilan Biodata Dinamis (Mengikuti Input Terbaru) -->
             <div class="biodata">
                 <p><b>Nama:</b> {nama_user}</p>
                 <p><b>Universitas:</b> {univ_user}</p>
@@ -118,13 +123,13 @@ def home():
             </div>
 
             <form method="POST">
-                <!-- Menyimpan data agar tidak hilang saat tombol ditekan -->
+                <!-- KUNCI PENTING: Meneruskan data state agar tidak ter-reset oleh sistem Flask -->
                 <input type="hidden" name="show_soal" value="{show_soal}">
                 <input type="hidden" name="nama_user" value="{nama_user}">
                 <input type="hidden" name="univ_user" value="{univ_user}">
                 <input type="hidden" name="status_user" value="{status_user}">
                 
-                <!-- Menu Pengeditan Profil (Hanya Muncul di Awal) -->
+                <!-- Menu Pengeditan Profil (Hanya Muncul di Menu Awal) -->
                 {f'''
                 <div class="edit-box">
                     <h4 style="margin:0;">⚙️ Pengaturan Profil:</h4>
@@ -149,7 +154,7 @@ def home():
                 ''' if show_soal == "false" else ""}
     """
 
-  # Jika status kuis aktif, tampilkan soal
+  # Jika status kuis terbuka (show_soal == true), tampilkan bagian soal
   if show_soal == "true":
     html_page += f"""
                 <div class="soal-box">
@@ -157,17 +162,17 @@ def home():
                     
                     <div class="soal">
                         <p><b>Soal 1:</b> Berapakah 5 + 7?</p>
-                        <input type="number" name="soal1" value="{request.form.get('soal1', '')}" required> {hasil_soal1}
+                        <input type="number" name="soal1" value="{jawab1}" required> {hasil_soal1}
                     </div>
 
                     <div class="soal">
                         <p><b>Soal 2:</b> Berapakah 8 x 5?</p>
-                        <input type="number" name="soal2" value="{request.form.get('soal2', '')}" required> {hasil_soal2}
+                        <input type="number" name="soal2" value="{jawab2}" required> {hasil_soal2}
                     </div>
 
                     <div class="soal">
                         <p><b>Soal 3:</b> Berapakah 25 : 5?</p>
-                        <input type="number" name="soal3" value="{request.form.get('soal3', '')}" required> {hasil_soal3}
+                        <input type="number" name="soal3" value="{jawab3}" required> {hasil_soal3}
                     </div>
 
                     <br>
